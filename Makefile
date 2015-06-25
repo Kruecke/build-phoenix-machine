@@ -1,5 +1,5 @@
 .PHONY: all
-all: sysinstall build-ubuntu
+all: sysinstall ubuntu-vm
 
 .PHONY: sysinstall
 sysinstall:
@@ -7,36 +7,39 @@ sysinstall:
 	sudo apt-get -y install virtualbox virtualbox-dkms
 
 .PHONY: build-ubuntu
-build-ubuntu: ubuntu.iso
+ubuntu-vm: unattended.iso
 	VBoxManage createvm --name ubuntu-phoenix --ostype Ubuntu_64 --register
 	VBoxManage modifyvm ubuntu-phoenix --memory 512
 	VBoxManage createhd --filename ubuntu-phoenix-hd --size 10240
 	VBoxManage storagectl ubuntu-phoenix --name satactl --add sata --bootable on
 	VBoxManage storageattach ubuntu-phoenix --storagectl satactl --port 0 --type hdd --medium ubuntu-phoenix-hd.vdi
-	VBoxManage storageattach ubuntu-phoenix --storagectl satactl --port 1 --type dvddrive --medium ubuntu.iso
+	VBoxManage storageattach ubuntu-phoenix --storagectl satactl --port 1 --type dvddrive --medium unattended.iso
 	VBoxManage startvm ubuntu-phoenix
 
-ubuntu.iso: mini.iso
+unattended.iso: ubuntu.iso
 	# Extract ISO
 	mkdir -p mnt_iso ubuntu
-	sudo mount -o loop mini.iso mnt_iso
+	sudo mount -o loop ubuntu.iso mnt_iso
 	cp -rT mnt_iso ubuntu
 	chmod -R +w ubuntu
 	sudo umount mnt_iso
 	# Prepare Image
-	cp ubuntu-preseed.cfg ubuntu/preseed.cfg
-	echo "totaltimeout 1" >> ubuntu/isolinux.cfg
-	sed -i "/\tappend vga=788 initrd=initrd.gz --- quiet/c\\\tappend vga=788 initrd=initrd.gz preseed/file=/cdrom/preseed.cfg preseed/file/checksum=$(shell md5sum ubuntu-preseed.cfg | grep -Eo '^[^ ]+') debian-installer/locale=en_US netcfg/choose_interface=auto debconf/priority=critical ---" ubuntu/txt.cfg
+	echo en > ubuntu/isolinux/langlist # does this do anything?
+	sed -i "/timeout/c\timeout 10" ubuntu/isolinux/isolinux.cfg
+	cp ks.cfg ubuntu/ks.cfg
+	echo "d-i user-setup/allow-password-weak boolean true" >> ubuntu/preseed/ubuntu-server-minimalvm.seed
+	#debian-installer/locale=en_US
+	sed -i "/append.*preseed/c\  append file=/cdrom/preseed/ubuntu-server-minimalvm.seed initrd=/install/initrd.gz ks=cdrom:/ks.cfg" ubuntu/isolinux/txt.cfg
 	# Build new ISO
-	mkisofs -o ubuntu.iso -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table ubuntu
-	# Clean up
-	rm -rf ubuntu mnt_iso
+	mkisofs -D -r -cache-inodes -J -l -o unattended.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table ubuntu
 
-mini.iso:
-	wget http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-amd64/current/images/netboot/mini.iso
+ubuntu.iso:
+	# Download current Ubuntu 14.04 server image
+	wget -O ubuntu.iso http://releases.ubuntu.com/14.04.2/ubuntu-14.04.2-server-amd64.iso
 
 .PHONY: clean
 clean:
-	VBoxManage unregistervm ubuntu-phoenix --delete
+	-VBoxManage unregistervm ubuntu-phoenix --delete
 	rm -rf *.vdi
-	rm -rf ubuntu.iso
+	rm -rf unattended.iso
+	rm -rf ubuntu mnt_iso
