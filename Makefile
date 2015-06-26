@@ -5,6 +5,7 @@ all: sysinstall ubuntu-vm
 sysinstall:
 	sudo apt-get -y update
 	sudo apt-get -y install virtualbox virtualbox-dkms
+	sudo apt-get -y install virtualbox-qt # for now, maybe headless later
 
 .PHONY: build-ubuntu
 ubuntu-vm: unattended.iso
