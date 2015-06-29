@@ -38,11 +38,14 @@ ubuntu.iso:
 	# Download current Ubuntu 14.04 server image
 	wget -O ubuntu.iso http://releases.ubuntu.com/14.04.2/ubuntu-14.04.2-server-amd64.iso
 
-.PHONY: purge
-purge: clean
+.PHONY: purge-vm
+purge-vm: clean
 	-VBoxManage unregistervm ubuntu-phoenix --delete
 	rm -rf *.vdi
-	rm -rf unattended.iso
+
+.PHONY: purge-iso
+purge-iso: clean
+	rm -rf *.iso
 
 .PHONY: clean
 clean:
