@@ -1,4 +1,5 @@
 VMNAME = ubuntu-phoenix
+VMNWIF = eth0
 
 .PHONY: all
 all: sysinstall ubuntu-vm
@@ -17,7 +18,7 @@ ubuntu-vm: unattended.iso
 	VBoxManage storagectl $(VMNAME) --name satactl --add sata --bootable on
 	VBoxManage storageattach $(VMNAME) --storagectl satactl --port 0 --type hdd --medium ubuntu-phoenix-hd.vdi
 	VBoxManage storageattach $(VMNAME) --storagectl satactl --port 1 --type dvddrive --medium unattended.iso
-	#VBoxManage modifyvm $(VMNAME) --nic1 bridged --bridgeadapter1 eth0
+	VBoxManage modifyvm $(VMNAME) --nic1 bridged --bridgeadapter1 $(VMNWIF)
 	VBoxManage startvm $(VMNAME)
 
 unattended.iso: ubuntu.iso ks.cfg run-phoenix.sh
