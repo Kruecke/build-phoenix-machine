@@ -17,10 +17,10 @@ ubuntu-vm: unattended.iso
 	VBoxManage storagectl $(VMNAME) --name satactl --add sata --bootable on
 	VBoxManage storageattach $(VMNAME) --storagectl satactl --port 0 --type hdd --medium ubuntu-phoenix-hd.vdi
 	VBoxManage storageattach $(VMNAME) --storagectl satactl --port 1 --type dvddrive --medium unattended.iso
-	VBoxManage modifyvm $(VMNAME) --nic1 bridged
+	#VBoxManage modifyvm $(VMNAME) --nic1 bridged --bridgeadapter1 eth0
 	VBoxManage startvm $(VMNAME)
 
-unattended.iso: ubuntu.iso ks.cfg
+unattended.iso: ubuntu.iso ks.cfg install-phoenix.sh
 	# Extract ISO
 	mkdir -p mnt_iso ubuntu
 	sudo mount -o loop ubuntu.iso mnt_iso
@@ -30,9 +30,9 @@ unattended.iso: ubuntu.iso ks.cfg
 	# Prepare Image
 	echo en > ubuntu/isolinux/langlist # does this do anything?
 	sed -i "/timeout/c\timeout 10" ubuntu/isolinux/isolinux.cfg
-	cp ks.cfg ubuntu/ks.cfg
+	cp ks.cfg             ubuntu/
+	cp install-phoenix.sh ubuntu/
 	echo "d-i user-setup/allow-password-weak boolean true" >> ubuntu/preseed/ubuntu-server-minimalvm.seed
-	#debian-installer/locale=en_US
 	sed -i "/append.*preseed/c\  append file=/cdrom/preseed/ubuntu-server-minimalvm.seed initrd=/install/initrd.gz ks=cdrom:/ks.cfg" ubuntu/isolinux/txt.cfg
 	# Build new ISO
 	mkisofs -D -r -cache-inodes -J -l -o unattended.iso -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table ubuntu
@@ -43,8 +43,7 @@ ubuntu.iso:
 
 .PHONY: purge-vm
 purge-vm: clean
-	-VBoxManage unregistervm $(VMNAME) --delete
-	rm -rf *.vdi
+	VBoxManage unregistervm $(VMNAME) --delete
 
 .PHONY: purge-iso
 purge-iso: clean
