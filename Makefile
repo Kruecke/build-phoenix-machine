@@ -17,7 +17,7 @@ ubuntu-vm: unattended.iso
 	VBoxManage storageattach ubuntu-phoenix --storagectl satactl --port 1 --type dvddrive --medium unattended.iso
 	VBoxManage startvm ubuntu-phoenix
 
-unattended.iso: ubuntu.iso
+unattended.iso: ubuntu.iso ks.cfg
 	# Extract ISO
 	mkdir -p mnt_iso ubuntu
 	sudo mount -o loop ubuntu.iso mnt_iso
@@ -38,9 +38,12 @@ ubuntu.iso:
 	# Download current Ubuntu 14.04 server image
 	wget -O ubuntu.iso http://releases.ubuntu.com/14.04.2/ubuntu-14.04.2-server-amd64.iso
 
-.PHONY: clean
-clean:
+.PHONY: purge
+purge: clean
 	-VBoxManage unregistervm ubuntu-phoenix --delete
 	rm -rf *.vdi
 	rm -rf unattended.iso
+
+.PHONY: clean
+clean:
 	rm -rf ubuntu mnt_iso
