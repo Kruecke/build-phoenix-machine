@@ -1,3 +1,5 @@
+VMNAME = ubuntu-phoenix
+
 .PHONY: all
 all: sysinstall ubuntu-vm
 
@@ -9,13 +11,14 @@ sysinstall:
 
 .PHONY: build-ubuntu
 ubuntu-vm: unattended.iso
-	VBoxManage createvm --name ubuntu-phoenix --ostype Ubuntu_64 --register
-	VBoxManage modifyvm ubuntu-phoenix --memory 512
-	VBoxManage createhd --filename ubuntu-phoenix-hd --size 10240
-	VBoxManage storagectl ubuntu-phoenix --name satactl --add sata --bootable on
-	VBoxManage storageattach ubuntu-phoenix --storagectl satactl --port 0 --type hdd --medium ubuntu-phoenix-hd.vdi
-	VBoxManage storageattach ubuntu-phoenix --storagectl satactl --port 1 --type dvddrive --medium unattended.iso
-	VBoxManage startvm ubuntu-phoenix
+	VBoxManage createvm --name $(VMNAME) --ostype Ubuntu_64 --register
+	VBoxManage modifyvm $(VMNAME) --memory 512
+	VBoxManage createhd --filename $(VMNAME)-hd --size 10240
+	VBoxManage storagectl $(VMNAME) --name satactl --add sata --bootable on
+	VBoxManage storageattach $(VMNAME) --storagectl satactl --port 0 --type hdd --medium ubuntu-phoenix-hd.vdi
+	VBoxManage storageattach $(VMNAME) --storagectl satactl --port 1 --type dvddrive --medium unattended.iso
+	VBoxManage modifyvm $(VMNAME) --nic1 bridged
+	VBoxManage startvm $(VMNAME)
 
 unattended.iso: ubuntu.iso ks.cfg
 	# Extract ISO
@@ -40,7 +43,7 @@ ubuntu.iso:
 
 .PHONY: purge-vm
 purge-vm: clean
-	-VBoxManage unregistervm ubuntu-phoenix --delete
+	-VBoxManage unregistervm $(VMNAME) --delete
 	rm -rf *.vdi
 
 .PHONY: purge-iso
