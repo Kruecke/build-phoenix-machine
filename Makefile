@@ -20,7 +20,7 @@ ubuntu-vm: unattended.iso
 	#VBoxManage modifyvm $(VMNAME) --nic1 bridged --bridgeadapter1 eth0
 	VBoxManage startvm $(VMNAME)
 
-unattended.iso: ubuntu.iso ks.cfg install-phoenix.sh
+unattended.iso: ubuntu.iso ks.cfg run-phoenix.sh
 	# Extract ISO
 	mkdir -p mnt_iso ubuntu
 	sudo mount -o loop ubuntu.iso mnt_iso
@@ -30,8 +30,8 @@ unattended.iso: ubuntu.iso ks.cfg install-phoenix.sh
 	# Prepare Image
 	echo en > ubuntu/isolinux/langlist # does this do anything?
 	sed -i "/timeout/c\timeout 10" ubuntu/isolinux/isolinux.cfg
-	cp ks.cfg             ubuntu/
-	cp install-phoenix.sh ubuntu/
+	cp ks.cfg         ubuntu/
+	cp run-phoenix.sh ubuntu/
 	echo "d-i user-setup/allow-password-weak boolean true" >> ubuntu/preseed/ubuntu-server-minimalvm.seed
 	sed -i "/append.*preseed/c\  append file=/cdrom/preseed/ubuntu-server-minimalvm.seed initrd=/install/initrd.gz ks=cdrom:/ks.cfg" ubuntu/isolinux/txt.cfg
 	# Build new ISO
