@@ -13,7 +13,7 @@ sysinstall:
 .PHONY: build-ubuntu
 ubuntu-vm: unattended.iso
 	VBoxManage createvm --name $(VMNAME) --ostype Ubuntu_64 --register
-	VBoxManage modifyvm $(VMNAME) --memory 512
+	VBoxManage modifyvm $(VMNAME) --memory 1024
 	VBoxManage createhd --filename $(VMNAME)-hd --size 10240
 	VBoxManage storagectl $(VMNAME) --name satactl --add sata --bootable on
 	VBoxManage storageattach $(VMNAME) --storagectl satactl --port 0 --type hdd --medium ubuntu-phoenix-hd.vdi
