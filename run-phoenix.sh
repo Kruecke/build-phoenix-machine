@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 cd ~
 
 if [ ! -d "pyramid-phoenix" ]; then
@@ -16,3 +16,5 @@ fi
 
 ### Start
 make -C pyramid-phoenix start
+
+exit 0
