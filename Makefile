@@ -32,6 +32,7 @@ unattended.iso: ubuntu.iso ks.cfg run-phoenix.sh
 	echo en > ubuntu/isolinux/langlist # does this do anything?
 	sed -i "/timeout/c\timeout 10" ubuntu/isolinux/isolinux.cfg
 	cp ks.cfg         ubuntu/
+	cp rc_local.sh    ubuntu/
 	cp run-phoenix.sh ubuntu/
 	echo "d-i user-setup/allow-password-weak boolean true" >> ubuntu/preseed/ubuntu-server-minimalvm.seed
 	sed -i "/append.*preseed/c\  append file=/cdrom/preseed/ubuntu-server-minimalvm.seed initrd=/install/initrd.gz ks=cdrom:/ks.cfg" ubuntu/isolinux/txt.cfg
